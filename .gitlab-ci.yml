@@ -1,0 +1,51 @@
+# ------------ Node Version ----------------------
+.node-image: &node-image
+  image: node:latest
+
+# ------------  CI Stages ------------------------
+stages:
+  - build
+  - lint-frontend
+  - unit-test
+  - deploy
+
+# ------------ Build Front End -------------------
+build-frontend:
+  <<: *node-image
+  stage: build
+  artifacts:
+    untracked: true
+  cache:
+      paths:
+      - node_modules/
+  script:
+    - yarn install
+    - yarn run build
+# ------------ End of Build Front End ------------
+
+# ------------ Lint Front End --------------------
+lint-frontend:
+  <<: *node-image
+  stage: lint-frontend
+  dependencies:
+    - build-frontend
+  script:
+    - yarn run ci:lint
+# ------------ End of Lint Front End -------------
+
+
+# ------------ Deploy Front End ------------------
+pages:
+  <<: *node-image
+  stage: deploy
+  dependencies:
+      - build-frontend
+  script:
+    - mv public public-vue
+    - mv dist public
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+# ------------ End of Deploy Front End -----------
